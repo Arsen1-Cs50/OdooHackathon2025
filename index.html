@@ -264,13 +264,14 @@
 
 <body>
   <button class="debug-toggle" onclick="toggleDebug()">Debug</button>
-  
+
   <div class="container">
     <header class="header">
       <h1 class="logo">Skill Swap Platform</h1>
       <div class="top-actions">
         <div class="menu-wrapper">
-          <img src="https://via.placeholder.com/40x40/0ea5e9/ffffff?text=U" id="headerAvatar" class="avatar" alt="Menu" onclick="toggleMenu()" />
+          <img src="https://via.placeholder.com/40x40/0ea5e9/ffffff?text=U" id="headerAvatar" class="avatar" alt="Menu"
+            onclick="toggleMenu()" />
           <div id="dropdownMenu" class="dropdown hidden">
             <div class="menu-header">
               Logged in as: <span id="menuEmail" class="menu-email">Not Logged In</span>
@@ -308,7 +309,7 @@
     <div id="profileList" class="profiles">
       <div class="loading">Loading profiles...</div>
     </div>
-    
+
     <div class="pagination"></div>
   </div>
 
@@ -317,7 +318,7 @@
     // Initialize Supabase client
     const supabaseUrl = 'https://owypmngmbzpwooyvxehn.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93eXBtbmdtYnpwd29veXZ4ZWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyOTQxNjUsImV4cCI6MjA2Nzg3MDE2NX0.VPlZZp-vfOy3-bAc4v3rThj6PLfe8_4YsWqWscaz168';
-    
+
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // Global variables
@@ -349,16 +350,16 @@
         'Sample Profile': allProfiles.length > 0 ? allProfiles[0] : 'No profiles loaded',
         'Profile Sample Keys': allProfiles.length > 0 ? Object.keys(allProfiles[0]) : 'No profiles'
       };
-      
+
       debugContent.innerHTML = '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
-      
+
       // Add buttons for testing and fixing visibility
       const buttonContainer = document.createElement('div');
       buttonContainer.style.marginTop = '10px';
       buttonContainer.style.display = 'flex';
       buttonContainer.style.gap = '10px';
       buttonContainer.style.flexWrap = 'wrap';
-      
+
       const buttons = [
         { text: 'Test Table Structure', action: testTableStructure },
         { text: 'Check User Visibility', action: checkUserVisibility },
@@ -366,7 +367,7 @@
         { text: 'Create Sample Users', action: createSampleUsers },
         { text: 'Refresh Profiles', action: refreshProfiles }
       ];
-      
+
       buttons.forEach(button => {
         const btn = document.createElement('button');
         btn.textContent = button.text;
@@ -380,7 +381,7 @@
         btn.style.fontSize = '12px';
         buttonContainer.appendChild(btn);
       });
-      
+
       debugContent.appendChild(buttonContainer);
     }
 
@@ -400,19 +401,19 @@
     async function testTableStructure() {
       try {
         console.log('Testing table structure...');
-        
+
         // Test if table exists
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .limit(1);
-        
+
         if (error) {
           console.error('Table structure test error:', error);
           showMessage(`Table structure error: ${error.message}`, 'error');
           return;
         }
-        
+
         if (data && data.length > 0) {
           console.log('Table structure:', Object.keys(data[0]));
           showMessage(`Table exists with columns: ${Object.keys(data[0]).join(', ')}`, 'success');
@@ -420,12 +421,12 @@
           console.log('Table exists but is empty');
           showMessage('Table exists but contains no data', 'error');
         }
-        
+
         // Test row count
         const { count, error: countError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
-        
+
         if (!countError) {
           console.log('Total rows in profiles table:', count);
           showMessage(`Total rows in profiles table: ${count}`, 'success');
@@ -433,7 +434,7 @@
 
         // Test visibility settings
         await checkUserVisibility();
-        
+
       } catch (err) {
         console.error('Table structure test failed:', err);
         showMessage(`Table structure test failed: ${err.message}`, 'error');
@@ -443,36 +444,36 @@
     async function checkUserVisibility() {
       try {
         console.log('Checking user visibility settings...');
-        
+
         // Check all profiles (public and private)
         const { data: allProfiles, error: allError } = await supabase
           .from('profiles')
           .select('id, name, is_public, created_at');
-        
+
         if (allError) {
           console.error('Error checking all profiles:', allError);
           return;
         }
-        
+
         console.log('All profiles:', allProfiles);
-        
+
         const publicProfiles = allProfiles?.filter(p => p.is_public === true) || [];
         const privateProfiles = allProfiles?.filter(p => p.is_public === false) || [];
         const nullVisibility = allProfiles?.filter(p => p.is_public === null || p.is_public === undefined) || [];
-        
+
         showMessage(
           `Visibility Check: Total: ${allProfiles?.length || 0}, Public: ${publicProfiles.length}, Private: ${privateProfiles.length}, Null: ${nullVisibility.length}`,
           'success'
         );
-        
+
         if (privateProfiles.length > 0) {
           console.log('Private profiles found:', privateProfiles);
         }
-        
+
         if (nullVisibility.length > 0) {
           console.log('Profiles with null visibility:', nullVisibility);
         }
-        
+
       } catch (err) {
         console.error('Error checking visibility:', err);
         showMessage(`Error checking visibility: ${err.message}`, 'error');
@@ -482,27 +483,27 @@
     async function makeAllUsersVisible() {
       try {
         console.log('Making all users visible...');
-        
+
         // Update all profiles to be public
         const { data, error } = await supabase
           .from('profiles')
           .update({ is_public: true })
           .neq('is_public', true)
           .select();
-        
+
         if (error) {
           console.error('Error making users visible:', error);
           showMessage(`Error making users visible: ${error.message}`, 'error');
           return;
         }
-        
+
         console.log('Updated profiles to visible:', data);
         showMessage(`Made ${data?.length || 0} profiles visible`, 'success');
-        
+
         // Refresh the profiles
         allProfiles = await fetchProfiles();
         renderProfilesPage(1);
-        
+
       } catch (err) {
         console.error('Error making users visible:', err);
         showMessage(`Error making users visible: ${err.message}`, 'error');
@@ -512,7 +513,7 @@
     async function createSampleUsers() {
       try {
         console.log('Creating sample users...');
-        
+
         const sampleUsers = [
           {
             name: 'Alex Johnson',
@@ -560,25 +561,25 @@
             profile_photo: 'https://via.placeholder.com/100x100/ef4444/ffffff?text=DK'
           }
         ];
-        
+
         const { data, error } = await supabase
           .from('profiles')
           .insert(sampleUsers)
           .select();
-        
+
         if (error) {
           console.error('Error creating sample users:', error);
           showMessage(`Error creating sample users: ${error.message}`, 'error');
           return;
         }
-        
+
         console.log('Created sample users:', data);
         showMessage(`Created ${data?.length || 0} sample users`, 'success');
-        
+
         // Refresh the profiles
         allProfiles = await fetchProfiles();
         renderProfilesPage(1);
-        
+
       } catch (err) {
         console.error('Error creating sample users:', err);
         showMessage(`Error creating sample users: ${err.message}`, 'error');
@@ -591,7 +592,7 @@
       messageElement.className = type;
       messageElement.textContent = message;
       messagesDiv.appendChild(messageElement);
-      
+
       setTimeout(() => {
         messageElement.remove();
       }, 5000);
@@ -601,7 +602,7 @@
     async function fetchProfiles() {
       try {
         console.log('Fetching profiles from Supabase...');
-        
+
         // First, let's check what columns exist in the profiles table
         const { data: tableInfo, error: tableError } = await supabase
           .from('profiles')
@@ -611,42 +612,42 @@
         if (tableError) {
           console.error('Table check error:', tableError);
           showMessage(`Database connection error: ${tableError.message}`, 'error');
-          
+
           // Try a more basic query to see if table exists
           try {
             const { data: basicData, error: basicError } = await supabase
               .from('profiles')
               .select('id')
               .limit(1);
-            
+
             if (basicError) {
               showMessage(`Table 'profiles' may not exist. Error: ${basicError.message}`, 'error');
             }
           } catch (basicErr) {
             showMessage(`Database access error: ${basicErr.message}`, 'error');
           }
-          
+
           return [];
         }
 
         console.log('Table structure check:', tableInfo);
-        
+
         // Now try the full query with error handling for specific columns
         let selectQuery = 'id, name';
-        
+
         // Add optional columns if they exist
         if (tableInfo && tableInfo.length > 0) {
           const sampleRow = tableInfo[0];
           const availableColumns = Object.keys(sampleRow);
           console.log('Available columns:', availableColumns);
-          
+
           const desiredColumns = ['skills_offered', 'skills_wanted', 'profile_photo', 'rating', 'availability', 'is_public'];
           const existingColumns = desiredColumns.filter(col => availableColumns.includes(col));
-          
+
           if (existingColumns.length > 0) {
             selectQuery += ', ' + existingColumns.join(', ');
           }
-          
+
           console.log('Using select query:', selectQuery);
         }
 
@@ -658,44 +659,44 @@
         if (error) {
           console.error('Supabase query error:', error);
           showMessage(`Database query error: ${error.message}`, 'error');
-          
+
           // Try without is_public filter
           const { data: fallbackData, error: fallbackError } = await supabase
             .from('profiles')
             .select(selectQuery)
             .limit(10);
-          
+
           if (fallbackError) {
             showMessage(`Fallback query also failed: ${fallbackError.message}`, 'error');
             return [];
           }
-          
+
           console.log('Fallback query succeeded:', fallbackData);
           showMessage('Loaded profiles without is_public filter', 'success');
           return fallbackData || [];
         }
 
         console.log('Fetched profiles:', data);
-        
+
         if (!data || data.length === 0) {
           console.log('No public profiles found. Trying without is_public filter...');
-          
+
           // Try without is_public filter
           const { data: allData, error: allError } = await supabase
             .from('profiles')
             .select(selectQuery)
             .limit(10);
-          
+
           if (allError) {
             showMessage(`No profiles found and fallback failed: ${allError.message}`, 'error');
             return [];
           }
-          
+
           if (allData && allData.length > 0) {
             showMessage('Found profiles but none are marked as public. Showing all profiles for testing.', 'success');
             return allData;
           }
-          
+
           showMessage('No profiles found in the database. Please add some test data.', 'error');
           return [];
         }
@@ -711,7 +712,7 @@
     // Enhanced profile rendering
     function renderProfilesPage(page, list = allProfiles) {
       const container = document.getElementById('profileList');
-      
+
       if (list.length === 0) {
         container.innerHTML = '<div class="no-results">No profiles found. Try adjusting your search or check the debug panel.</div>';
         document.querySelector('.pagination').innerHTML = '';
@@ -725,11 +726,11 @@
       paginated.forEach(profile => {
         const card = document.createElement('div');
         card.className = 'profile-card';
-        
-        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered : 
-                             (profile.skills_offered ? [profile.skills_offered] : []);
-        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted : 
-                            (profile.skills_wanted ? [profile.skills_wanted] : []);
+
+        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered :
+          (profile.skills_offered ? [profile.skills_offered] : []);
+        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted :
+          (profile.skills_wanted ? [profile.skills_wanted] : []);
 
         card.innerHTML = `
           <div class="profile-photo-wrapper">
@@ -751,15 +752,16 @@
             <div><strong>Availability:</strong> ${profile.availability || 'Not specified'}</div>
             <div class="rating">Rating: ${profile.rating || 'No rating'}/5</div>
           </div>
-          <button class="request-btn" onclick="window.location.href='swap_request.html?to=${profile.id}'">Request Skills</button
-
+          <button class="request-btn" onclick="sendSkillRequest('${profile.id}', '${profile.name}', ${JSON.stringify(skillsOffered).replace(/"/g, '&quot;')})">
+            Request Skills
+          </button>
         `;
 
         container.appendChild(card);
       });
 
       renderPagination(list.length);
-      
+
       if (debugMode) {
         updateDebugInfo();
       }
@@ -769,7 +771,7 @@
     async function sendSkillRequest(toUserId, toUserName, skillsOffered) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
           showMessage('Please login to send skill requests', 'error');
           return;
@@ -792,13 +794,13 @@
           return;
         }
 
-        const userSkillsWanted = Array.isArray(currentUserProfile.skills_wanted) ? 
-                                currentUserProfile.skills_wanted : 
-                                (currentUserProfile.skills_wanted ? [currentUserProfile.skills_wanted] : []);
+        const userSkillsWanted = Array.isArray(currentUserProfile.skills_wanted) ?
+          currentUserProfile.skills_wanted :
+          (currentUserProfile.skills_wanted ? [currentUserProfile.skills_wanted] : []);
 
         // Find matching skills
-        const matchingSkills = skillsOffered.filter(skill => 
-          userSkillsWanted.some(wantedSkill => 
+        const matchingSkills = skillsOffered.filter(skill =>
+          userSkillsWanted.some(wantedSkill =>
             wantedSkill.toLowerCase().includes(skill.toLowerCase()) ||
             skill.toLowerCase().includes(wantedSkill.toLowerCase())
           )
@@ -829,13 +831,25 @@
         if (error) {
           console.error('Request error:', error);
           showMessage(`Error sending request: ${error.message}`, 'error');
+          showMessage(
+            `Request sent to ${toUserName}! ${matchingSkills.length > 0 ?
+              `Matching skills: ${matchingSkills.join(', ')}` :
+              'General skill exchange request sent.'}`,
+            'success'
+          );
+
+          // ✅ OPTIONAL: Redirect to requests page after 2 seconds
+          setTimeout(() => {
+            window.location.href = 'requests.html';
+          }, 2000);
+
           return;
         }
 
         showMessage(
-          `Request sent to ${toUserName}! ${matchingSkills.length > 0 ? 
-            `Matching skills: ${matchingSkills.join(', ')}` : 
-            'General skill exchange request sent.'}`, 
+          `Request sent to ${toUserName}! ${matchingSkills.length > 0 ?
+            `Matching skills: ${matchingSkills.join(', ')}` :
+            'General skill exchange request sent.'}`,
           'success'
         );
 
@@ -854,14 +868,14 @@
     function renderPagination(total) {
       const totalPages = Math.ceil(total / profilesPerPage);
       const container = document.querySelector('.pagination');
-      
+
       if (totalPages <= 1) {
         container.innerHTML = '';
         return;
       }
 
       let html = `<button onclick="changePage(${Math.max(1, currentPage - 1)})" ${currentPage === 1 ? 'disabled' : ''}>&lt;</button>`;
-      
+
       for (let i = 1; i <= totalPages; i++) {
         if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
           html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active-page' : ''}">${i}</button>`;
@@ -869,7 +883,7 @@
           html += `<span>...</span>`;
         }
       }
-      
+
       html += `<button onclick="changePage(${Math.min(totalPages, currentPage + 1)})" ${currentPage === totalPages ? 'disabled' : ''}>&gt;</button>`;
       container.innerHTML = html;
     }
@@ -882,27 +896,27 @@
     function searchSkill() {
       const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
       const availabilityFilter = document.getElementById('availability').value;
-      
+
       const filtered = allProfiles.filter(profile => {
-        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered : 
-                             (profile.skills_offered ? [profile.skills_offered] : []);
-        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted : 
-                            (profile.skills_wanted ? [profile.skills_wanted] : []);
-        
+        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered :
+          (profile.skills_offered ? [profile.skills_offered] : []);
+        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted :
+          (profile.skills_wanted ? [profile.skills_wanted] : []);
+
         const allSkills = [...skillsOffered, ...skillsWanted];
-        
-        const matchesSkills = !keyword || allSkills.some(skill => 
+
+        const matchesSkills = !keyword || allSkills.some(skill =>
           skill.toLowerCase().includes(keyword)
         );
-        
+
         const matchesAvailability = !availabilityFilter || profile.availability === availabilityFilter;
-        
+
         return matchesSkills && matchesAvailability;
       });
-      
+
       currentFilter = filtered;
       renderProfilesPage(1, filtered);
-      
+
       if (keyword || availabilityFilter) {
         showMessage(`Found ${filtered.length} profiles matching your search`, 'success');
       }
@@ -926,7 +940,7 @@
     }
 
     // Event listeners
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       const menu = document.getElementById('dropdownMenu');
       const avatar = document.getElementById('headerAvatar');
       if (menu && !menu.contains(e.target) && !avatar.contains(e.target)) {
@@ -935,7 +949,7 @@
     });
 
     // Enter key search
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         searchSkill();
       }
@@ -958,11 +972,11 @@
             .select('profile_photo, name')
             .eq('id', user.id)
             .single();
-          
+
           if (profile?.profile_photo) {
             avatar.src = profile.profile_photo;
           }
-          
+
           email.textContent = user.email;
           loginLink.style.display = 'none';
           signupLink.style.display = 'none';
@@ -977,7 +991,7 @@
         // Load profiles
         allProfiles = await fetchProfiles();
         renderProfilesPage(1);
-        
+
         if (allProfiles.length === 0) {
           console.log('No profiles loaded. Check your database setup.');
         }
@@ -1003,4 +1017,5 @@
     window.refreshProfiles = refreshProfiles;
   </script>
 </body>
+
 </html>
