@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Swap Platform</title>
+  <style>
+    body {
+      background-color: #0d0d14;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: #1a1a2e;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #2c2c3c;
+      border-radius: 0 0 12px 12px;
+      position: relative;
+    }
+
+    .logo {
+      color: #0ea5e9;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: absolute;
+      background: #1c1c2b;
+      color: white;
+      top: 70px;
+      right: 30px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 12px;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      min-width: 180px;
+    }
+
+    .dropdown a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .dropdown a:hover {
+      background-color: #0ea5e9;
+      color: black;
+    }
+
+    .menu-header {
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin: 40px 0 20px;
+    }
+
+    .search-bar input,
+    .search-bar select {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background-color: #1c1c2b;
+      color: white;
+    }
+
+    .search-bar button {
+      padding: 10px 20px;
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .profile-card {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid white;
+    }
+
+    .profile-photo-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .skill-tags span {
+      background-color: #0ea5e9;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 6px;
+      color: black;
+      display: inline-block;
+      font-size: 12px;
+    }
+
+    .request-btn {
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .pagination button {
+      background-color: #1a1a2e;
+      border: 1px solid #444;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin: 2px;
+    }
+
+    .active-page {
+      background-color: #0ea5e9;
+      color: black;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="logo">Skill Swap Platform</h1>
+      <div class="top-actions">
+        <div class="menu-wrapper">
+          <img src="default.jpg" id="headerAvatar" class="avatar" alt="Menu" onclick="toggleMenu()" />
+          <div id="dropdownMenu" class="dropdown hidden">
+            <div class="menu-header">
+              Logged in as: <span id="menuEmail" class="menu-email">Not Logged In</span>
+            </div>
+            <hr style="border-color: #444;" />
+            <a href="profile.html">View/Edit Profile</a>
+            <a href="auth.html" id="menuLogin">Login</a>
+            <a href="auth.html" id="menuSignup">Sign Up</a>
+            <a href="#" onclick="logout()" id="menuLogout">Logout</a>
+          </div>
+          
+        </div>
+      </div>
+    </header>
+    <div class="search-bar">
+      <select id="availability">
+        <option value="">Availability</option>
+        <option value="Weekends">Weekends</option>
+        <option value="Evenings">Evenings</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="Search skill...">
+      <button onclick="searchSkill()">Search</button>
+    </div>
+    <div id="profileList" class="profiles"></div>
+    <div class="pagination"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    const supabase = supabase.createClient(
+      "https://owypmngmbzpwooyvxehn.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93eXBtbmdtYnpwd29veXZ4ZWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyOTQxNjUsImV4cCI6MjA2Nzg3MDE2NX0.VPlZZp-vfOy3-bAc4v3rThj6PLfe8_4YsWqWscaz168"
+    );
+
+    async function fetchProfiles() {
+      const { data, error } = await supabase.from("profiles").select("name, skills_offered, skills_wanted, profile_photo, rating, availability").eq("is_public", true);
+      return data || [];
+    }
+
+    let allProfiles = [];
+    let currentPage = 1;
+    const profilesPerPage = 3;
+
+    function paginate(list, page) {
+      const start = (page - 1) * profilesPerPage;
+      return list.slice(start, start + profilesPerPage);
+    }
+
+    function renderProfilesPage(page, list = allProfiles) {
+      currentPage = page;
+      const paginated = paginate(list, page);
+      const container = document.getElementById("profileList");
+      container.innerHTML = "";
+
+      paginated.forEach(profile => {
+        const card = document.createElement("div");
+        card.className = "profile-card";
+        card.innerHTML = `
+          <div class="profile-photo-wrapper">
+            <img src="${profile.profile_photo || 'default-avatar.png'}" alt="${profile.name}" class="profile-photo-img" />
+          </div>
+          <div class="profile-info">
+            <h3>${profile.name}</h3>
+            <div><strong>Skills Offered:</strong> ${(profile.skills_offered || []).join(", ")}</div>
+            <div><strong>Skills Wanted:</strong> ${(profile.skills_wanted || []).join(", ")}</div>
+            <div><strong>Availability:</strong> ${profile.availability || 'N/A'}</div>
+            <div class="rating">Rating: ${profile.rating || 'N/A'}/5</div>
+          </div>
+          <button class="request-btn" onclick="alert('Requested ${profile.name}')">Request</button>
+        `;
+        container.appendChild(card);
+      });
+
+      renderPagination(list.length);
+    }
+
+    function renderPagination(total) {
+      const totalPages = Math.ceil(total / profilesPerPage);
+      const container = document.querySelector(".pagination");
+      let html = `<button onclick="changePage(${Math.max(1, currentPage - 1)})">&lt;</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active-page' : ''}">${i}</button>`;
+      }
+      html += `<button onclick="changePage(${Math.min(totalPages, currentPage + 1)})">&gt;</button>`;
+      container.innerHTML = html;
+    }
+
+    function changePage(page) {
+      renderProfilesPage(page);
+    }
+
+    function searchSkill() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const availabilityFilter = document.getElementById("availability").value;
+      const filtered = allProfiles.filter(p => {
+        const matchesSkills = (p.skills_offered || []).concat(p.skills_wanted || []).some(skill => skill.toLowerCase().includes(keyword));
+        const matchesAvailability = !availabilityFilter || p.availability === availabilityFilter;
+        return matchesSkills && matchesAvailability;
+      });
+      renderProfilesPage(1, filtered);
+    }
+
+    function toggleMenu() {
+      document.getElementById("dropdownMenu").classList.toggle("hidden");
+    }
+    window.toggleMenu = toggleMenu;
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "auth.html";
+    }
+    window.logout = logout;
+
+    document.addEventListener("click", function (e) {
+      const menu = document.getElementById("dropdownMenu");
+      const avatar = document.getElementById("headerAvatar");
+      if (menu && !menu.contains(e.target) && !avatar.contains(e.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const avatar = document.getElementById("headerAvatar");
+      const email = document.getElementById("menuEmail");
+      const loginLink = document.getElementById("menuLogin");
+      const signupLink = document.getElementById("menuSignup");
+      const logoutLink = document.getElementById("menuLogout");
+
+
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("profile_photo").eq("id", user.id).maybeSingle();
+        if (profile?.profile_photo) avatar.src = profile.profile_photo;
+        email.textContent = user.email;
+
+        loginLink.style.display = "none";
+        signupLink.style.display = "none";
+        logoutLink.style.display = "block";
+      } else {
+        email.textContent = "Not Logged In";
+        loginLink.style.display = "block";
+        signupLink.style.display = "block";
+        logoutLink.style.display = "none";
+      }
+
+
+      allProfiles = await fetchProfiles();
+      renderProfilesPage(1);
+    });
+  </script>
+</body>
+
+</html>

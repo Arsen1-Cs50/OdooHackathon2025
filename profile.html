@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Profile - Skill Swap</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1e40af;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Edit Your Profile</h2>
+
+  <form id="profile-form">
+    <label for="pfp-input">Upload Profile Photo:</label>
+    <input type="file" id="pfp-input" accept="image/*" /><br><br>
+
+    <label for="name">Name</label>
+    <input type="text" id="name" required />
+
+    <label for="location">Location (optional)</label>
+    <input type="text" id="location" />
+
+    <label for="availability">Availability</label>
+    <select id="availability">
+      <option value="weekends">Weekends</option>
+      <option value="evenings">Evenings</option>
+      <option value="anytime">Anytime</option>
+    </select>
+
+    <label for="visibility">Profile Visibility</label>
+    <select id="visibility">
+      <option value="true">Public</option>
+      <option value="false">Private</option>
+    </select>
+
+    <label for="skills-offered">Skills Offered</label>
+    <input id="skills-offered" name="skills-offered" />
+
+    <label for="skills-wanted">Skills Wanted</label>
+    <input id="skills-wanted" name="skills-wanted" />
+
+    <button type="submit">Save Profile</button>
+    <img id="pfp-preview" src="" alt="Preview" width="100" style="display:block;margin-top:10px;" />
+  </form>
+
+  <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      "https://owypmngmbzpwooyvxehn.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93eXBtbmdtYnpwd29veXZ4ZWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyOTQxNjUsImV4cCI6MjA2Nzg3MDE2NX0.VPlZZp-vfOy3-bAc4v3rThj6PLfe8_4YsWqWscaz168"
+    );
+
+    let user;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Auth Check
+      const { data: { user: loggedInUser } } = await supabaseClient.auth.getUser();
+      if (!loggedInUser) return window.location.href = "/auth.html";
+      user = loggedInUser;
+
+      // Handle PFP Upload
+      document.getElementById("pfp-input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}.${fileExt}`;
+        const filePath = fileName;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("avatars")
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type,
+          });
+
+        if (uploadError) {
+          alert("Upload failed.");
+          console.error(uploadError);
+          return;
+        }
+
+        const { data } = supabaseClient.storage.from("avatars").getPublicUrl(filePath);
+        const publicUrl = data.publicUrl;
+
+        // Save photo URL in profile
+        const { error: updateError } = await supabaseClient
+          .from("profiles")
+          .update({ profile_photo: publicUrl })
+          .eq("id", user.id);
+
+        if (updateError) {
+          alert("Could not update profile photo.");
+          console.error(updateError);
+        } else {
+          document.getElementById("pfp-preview").src = publicUrl;
+          alert("Profile photo updated!");
+        }
+      });
+
+      // Fetch skills master
+      const { data: skillList } = await supabaseClient.from("skills_master").select("name");
+      const skillNames = skillList.map(skill => skill.name);
+
+      // Setup Tagify
+      const offeredInput = new Tagify(document.getElementById('skills-offered'), {
+        whitelist: skillNames,
+        dropdown: { maxItems: 10, classname: "tags-look", enabled: 0, closeOnSelect: false }
+      });
+      const wantedInput = new Tagify(document.getElementById('skills-wanted'), {
+        whitelist: skillNames,
+        dropdown: { maxItems: 10, classname: "tags-look", enabled: 0, closeOnSelect: false }
+      });
+
+      // Load existing profile
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("*").eq("id", user.id).maybeSingle();
+
+
+      if (profile) {
+        if (profile.profile_photo) {
+          document.getElementById("pfp-preview").src = profile.profile_photo + "?t=" + new Date().getTime();
+        }
+
+        document.getElementById("name").value = profile.name || "";
+        document.getElementById("location").value = profile.location || "";
+        document.getElementById("availability").value = profile.availability || "anytime";
+        document.getElementById("visibility").value = profile.is_public ? "true" : "false";
+        offeredInput.addTags(profile.skills_offered || []);
+        wantedInput.addTags(profile.skills_wanted || []);
+      }
+
+      // Submit handler
+      document.getElementById("profile-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value;
+        const location = document.getElementById("location").value;
+        const availability = document.getElementById("availability").value;
+        const is_public = document.getElementById("visibility").value === "true";
+        const skills_offered = offeredInput.value.map(tag => tag.value);
+        const skills_wanted = wantedInput.value.map(tag => tag.value);
+
+        const { error } = await supabaseClient.from("profiles").upsert({
+          id: user.id,
+          name,
+          location,
+          availability,
+          is_public,
+          skills_offered,
+          skills_wanted
+        });
+
+        if (error) {
+          alert("Error saving profile.");
+          console.error(error);
+        } else {
+          alert("Profile saved!");
+          window.location.href = "index.html";
+
+        }
+      });
+    });
+  </script>
+</body>
+</html>
