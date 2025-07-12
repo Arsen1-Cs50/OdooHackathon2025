@@ -751,9 +751,8 @@
             <div><strong>Availability:</strong> ${profile.availability || 'Not specified'}</div>
             <div class="rating">Rating: ${profile.rating || 'No rating'}/5</div>
           </div>
-          <button class="request-btn" onclick="sendSkillRequest('${profile.id}', '${profile.name}', ${JSON.stringify(skillsOffered).replace(/"/g, '&quot;')})">
-            Request Skills
-          </button>
+          <button class="request-btn" onclick="window.location.href='swap_request.html?to=${profile.id}'">Request Skills</button
+
         `;
 
         container.appendChild(card);
