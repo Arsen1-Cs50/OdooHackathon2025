@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Swap Platform</title>
+  <style>
+    body {
+      background-color: #0d0d14;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: #1a1a2e;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #2c2c3c;
+      border-radius: 0 0 12px 12px;
+      position: relative;
+    }
+
+    .logo {
+      color: #0ea5e9;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: absolute;
+      background: #1c1c2b;
+      color: white;
+      top: 70px;
+      right: 30px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 12px;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      min-width: 180px;
+    }
+
+    .dropdown a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .dropdown a:hover {
+      background-color: #0ea5e9;
+      color: black;
+    }
+
+    .menu-header {
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .debug-panel {
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .debug-panel h3 {
+      color: #0ea5e9;
+      margin-top: 0;
+    }
+
+    .debug-panel pre {
+      background: #0d0d14;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin: 40px 0 20px;
+    }
+
+    .search-bar input,
+    .search-bar select {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background-color: #1c1c2b;
+      color: white;
+    }
+
+    .search-bar button {
+      padding: 10px 20px;
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .search-bar button:hover {
+      background-color: #0284c7;
+    }
+
+    .profiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .profile-card {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .profile-card:hover {
+      transform: translateY(-5px);
+      border-color: #0ea5e9;
+    }
+
+    .profile-photo-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .skill-tags {
+      margin: 10px 0;
+    }
+
+    .skill-tags span {
+      background-color: #0ea5e9;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 6px;
+      color: black;
+      display: inline-block;
+      font-size: 12px;
+    }
+
+    .skill-tags.wanted span {
+      background-color: #f59e0b;
+    }
+
+    .request-btn {
+      background-color: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .request-btn:hover {
+      background-color: #0284c7;
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .pagination button {
+      background-color: #1a1a2e;
+      border: 1px solid #444;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin: 2px;
+      cursor: pointer;
+    }
+
+    .pagination button:hover {
+      background-color: #0ea5e9;
+      color: black;
+    }
+
+    .active-page {
+      background-color: #0ea5e9;
+      color: black;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error {
+      background-color: #dc2626;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .success {
+      background-color: #16a34a;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .debug-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+  </style>
+</head>
+
+<body>
+  <button class="debug-toggle" onclick="toggleDebug()">Debug</button>
+  
+  <div class="container">
+    <header class="header">
+      <h1 class="logo">Skill Swap Platform</h1>
+      <div class="top-actions">
+        <div class="menu-wrapper">
+          <img src="https://via.placeholder.com/40x40/0ea5e9/ffffff?text=U" id="headerAvatar" class="avatar" alt="Menu" onclick="toggleMenu()" />
+          <div id="dropdownMenu" class="dropdown hidden">
+            <div class="menu-header">
+              Logged in as: <span id="menuEmail" class="menu-email">Not Logged In</span>
+            </div>
+            <hr style="border-color: #444;" />
+            <a href="profile.html">View/Edit Profile</a>
+            <a href="auth.html" id="menuLogin">Login</a>
+            <a href="auth.html" id="menuSignup">Sign Up</a>
+            <a href="#" onclick="logout()" id="menuLogout">Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="debugPanel" class="debug-panel hidden">
+      <h3>Debug Information</h3>
+      <div id="debugContent"></div>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="search-bar">
+      <select id="availability">
+        <option value="">All Availability</option>
+        <option value="Weekends">Weekends</option>
+        <option value="Evenings">Evenings</option>
+        <option value="Weekdays">Weekdays</option>
+        <option value="Flexible">Flexible</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="Search skills (e.g., JavaScript, Guitar, Cooking)...">
+      <button onclick="searchSkill()">Search</button>
+      <button onclick="clearSearch()">Clear</button>
+    </div>
+
+    <div id="profileList" class="profiles">
+      <div class="loading">Loading profiles...</div>
+    </div>
+    
+    <div class="pagination"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Initialize Supabase client
+    const supabaseUrl = 'https://owypmngmbzpwooyvxehn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93eXBtbmdtYnpwd29veXZ4ZWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyOTQxNjUsImV4cCI6MjA2Nzg3MDE2NX0.VPlZZp-vfOy3-bAc4v3rThj6PLfe8_4YsWqWscaz168';
+    
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Global variables
+    let allProfiles = [];
+    let currentPage = 1;
+    let currentFilter = [];
+    const profilesPerPage = 6;
+    let debugMode = false;
+
+    // Debug functions
+    function toggleDebug() {
+      debugMode = !debugMode;
+      const panel = document.getElementById('debugPanel');
+      panel.classList.toggle('hidden', !debugMode);
+      if (debugMode) {
+        updateDebugInfo();
+      }
+    }
+
+    function updateDebugInfo() {
+      const debugContent = document.getElementById('debugContent');
+      const info = {
+        'Total Profiles': allProfiles.length,
+        'Current Page': currentPage,
+        'Profiles Per Page': profilesPerPage,
+        'Current Filter': currentFilter.length > 0 ? currentFilter.length : 'None',
+        'Supabase URL': supabaseUrl,
+        'Last Fetch': new Date().toISOString(),
+        'Sample Profile': allProfiles.length > 0 ? allProfiles[0] : 'No profiles loaded',
+        'Profile Sample Keys': allProfiles.length > 0 ? Object.keys(allProfiles[0]) : 'No profiles'
+      };
+      
+      debugContent.innerHTML = '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
+      
+      // Add buttons for testing and fixing visibility
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.marginTop = '10px';
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.gap = '10px';
+      buttonContainer.style.flexWrap = 'wrap';
+      
+      const buttons = [
+        { text: 'Test Table Structure', action: testTableStructure },
+        { text: 'Check User Visibility', action: checkUserVisibility },
+        { text: 'Make All Users Visible', action: makeAllUsersVisible },
+        { text: 'Create Sample Users', action: createSampleUsers },
+        { text: 'Refresh Profiles', action: refreshProfiles }
+      ];
+      
+      buttons.forEach(button => {
+        const btn = document.createElement('button');
+        btn.textContent = button.text;
+        btn.onclick = button.action;
+        btn.style.padding = '8px 12px';
+        btn.style.background = '#0ea5e9';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '4px';
+        btn.style.cursor = 'pointer';
+        btn.style.fontSize = '12px';
+        buttonContainer.appendChild(btn);
+      });
+      
+      debugContent.appendChild(buttonContainer);
+    }
+
+    async function refreshProfiles() {
+      try {
+        showMessage('Refreshing profiles...', 'success');
+        allProfiles = await fetchProfiles();
+        renderProfilesPage(1);
+        if (debugMode) {
+          updateDebugInfo();
+        }
+      } catch (err) {
+        showMessage(`Error refreshing profiles: ${err.message}`, 'error');
+      }
+    }
+
+    async function testTableStructure() {
+      try {
+        console.log('Testing table structure...');
+        
+        // Test if table exists
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .limit(1);
+        
+        if (error) {
+          console.error('Table structure test error:', error);
+          showMessage(`Table structure error: ${error.message}`, 'error');
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          console.log('Table structure:', Object.keys(data[0]));
+          showMessage(`Table exists with columns: ${Object.keys(data[0]).join(', ')}`, 'success');
+        } else {
+          console.log('Table exists but is empty');
+          showMessage('Table exists but contains no data', 'error');
+        }
+        
+        // Test row count
+        const { count, error: countError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        
+        if (!countError) {
+          console.log('Total rows in profiles table:', count);
+          showMessage(`Total rows in profiles table: ${count}`, 'success');
+        }
+
+        // Test visibility settings
+        await checkUserVisibility();
+        
+      } catch (err) {
+        console.error('Table structure test failed:', err);
+        showMessage(`Table structure test failed: ${err.message}`, 'error');
+      }
+    }
+
+    async function checkUserVisibility() {
+      try {
+        console.log('Checking user visibility settings...');
+        
+        // Check all profiles (public and private)
+        const { data: allProfiles, error: allError } = await supabase
+          .from('profiles')
+          .select('id, name, is_public, created_at');
+        
+        if (allError) {
+          console.error('Error checking all profiles:', allError);
+          return;
+        }
+        
+        console.log('All profiles:', allProfiles);
+        
+        const publicProfiles = allProfiles?.filter(p => p.is_public === true) || [];
+        const privateProfiles = allProfiles?.filter(p => p.is_public === false) || [];
+        const nullVisibility = allProfiles?.filter(p => p.is_public === null || p.is_public === undefined) || [];
+        
+        showMessage(
+          `Visibility Check: Total: ${allProfiles?.length || 0}, Public: ${publicProfiles.length}, Private: ${privateProfiles.length}, Null: ${nullVisibility.length}`,
+          'success'
+        );
+        
+        if (privateProfiles.length > 0) {
+          console.log('Private profiles found:', privateProfiles);
+        }
+        
+        if (nullVisibility.length > 0) {
+          console.log('Profiles with null visibility:', nullVisibility);
+        }
+        
+      } catch (err) {
+        console.error('Error checking visibility:', err);
+        showMessage(`Error checking visibility: ${err.message}`, 'error');
+      }
+    }
+
+    async function makeAllUsersVisible() {
+      try {
+        console.log('Making all users visible...');
+        
+        // Update all profiles to be public
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({ is_public: true })
+          .neq('is_public', true)
+          .select();
+        
+        if (error) {
+          console.error('Error making users visible:', error);
+          showMessage(`Error making users visible: ${error.message}`, 'error');
+          return;
+        }
+        
+        console.log('Updated profiles to visible:', data);
+        showMessage(`Made ${data?.length || 0} profiles visible`, 'success');
+        
+        // Refresh the profiles
+        allProfiles = await fetchProfiles();
+        renderProfilesPage(1);
+        
+      } catch (err) {
+        console.error('Error making users visible:', err);
+        showMessage(`Error making users visible: ${err.message}`, 'error');
+      }
+    }
+
+    async function createSampleUsers() {
+      try {
+        console.log('Creating sample users...');
+        
+        const sampleUsers = [
+          {
+            name: 'Alex Johnson',
+            skills_offered: ['JavaScript', 'React', 'Node.js'],
+            skills_wanted: ['Python', 'Machine Learning'],
+            availability: 'Evenings',
+            is_public: true,
+            rating: 4.5,
+            profile_photo: 'https://via.placeholder.com/100x100/0ea5e9/ffffff?text=AJ'
+          },
+          {
+            name: 'Sarah Chen',
+            skills_offered: ['UI/UX Design', 'Figma', 'Photoshop'],
+            skills_wanted: ['Web Development', 'CSS'],
+            availability: 'Weekends',
+            is_public: true,
+            rating: 4.8,
+            profile_photo: 'https://via.placeholder.com/100x100/f59e0b/ffffff?text=SC'
+          },
+          {
+            name: 'Mike Rodriguez',
+            skills_offered: ['Guitar', 'Music Theory', 'Singing'],
+            skills_wanted: ['Web Development', 'Photography'],
+            availability: 'Flexible',
+            is_public: true,
+            rating: 4.2,
+            profile_photo: 'https://via.placeholder.com/100x100/10b981/ffffff?text=MR'
+          },
+          {
+            name: 'Emily Davis',
+            skills_offered: ['Cooking', 'Baking', 'Nutrition'],
+            skills_wanted: ['Language Learning', 'Spanish'],
+            availability: 'Weekends',
+            is_public: true,
+            rating: 4.6,
+            profile_photo: 'https://via.placeholder.com/100x100/8b5cf6/ffffff?text=ED'
+          },
+          {
+            name: 'David Kim',
+            skills_offered: ['Photography', 'Video Editing', 'Adobe Creative'],
+            skills_wanted: ['Music Production', 'Guitar'],
+            availability: 'Evenings',
+            is_public: true,
+            rating: 4.4,
+            profile_photo: 'https://via.placeholder.com/100x100/ef4444/ffffff?text=DK'
+          }
+        ];
+        
+        const { data, error } = await supabase
+          .from('profiles')
+          .insert(sampleUsers)
+          .select();
+        
+        if (error) {
+          console.error('Error creating sample users:', error);
+          showMessage(`Error creating sample users: ${error.message}`, 'error');
+          return;
+        }
+        
+        console.log('Created sample users:', data);
+        showMessage(`Created ${data?.length || 0} sample users`, 'success');
+        
+        // Refresh the profiles
+        allProfiles = await fetchProfiles();
+        renderProfilesPage(1);
+        
+      } catch (err) {
+        console.error('Error creating sample users:', err);
+        showMessage(`Error creating sample users: ${err.message}`, 'error');
+      }
+    }
+
+    function showMessage(message, type = 'error') {
+      const messagesDiv = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.className = type;
+      messageElement.textContent = message;
+      messagesDiv.appendChild(messageElement);
+      
+      setTimeout(() => {
+        messageElement.remove();
+      }, 5000);
+    }
+
+    // Profile fetching with better error handling
+    async function fetchProfiles() {
+      try {
+        console.log('Fetching profiles from Supabase...');
+        
+        // First, let's check what columns exist in the profiles table
+        const { data: tableInfo, error: tableError } = await supabase
+          .from('profiles')
+          .select('*')
+          .limit(1);
+
+        if (tableError) {
+          console.error('Table check error:', tableError);
+          showMessage(`Database connection error: ${tableError.message}`, 'error');
+          
+          // Try a more basic query to see if table exists
+          try {
+            const { data: basicData, error: basicError } = await supabase
+              .from('profiles')
+              .select('id')
+              .limit(1);
+            
+            if (basicError) {
+              showMessage(`Table 'profiles' may not exist. Error: ${basicError.message}`, 'error');
+            }
+          } catch (basicErr) {
+            showMessage(`Database access error: ${basicErr.message}`, 'error');
+          }
+          
+          return [];
+        }
+
+        console.log('Table structure check:', tableInfo);
+        
+        // Now try the full query with error handling for specific columns
+        let selectQuery = 'id, name';
+        
+        // Add optional columns if they exist
+        if (tableInfo && tableInfo.length > 0) {
+          const sampleRow = tableInfo[0];
+          const availableColumns = Object.keys(sampleRow);
+          console.log('Available columns:', availableColumns);
+          
+          const desiredColumns = ['skills_offered', 'skills_wanted', 'profile_photo', 'rating', 'availability', 'is_public'];
+          const existingColumns = desiredColumns.filter(col => availableColumns.includes(col));
+          
+          if (existingColumns.length > 0) {
+            selectQuery += ', ' + existingColumns.join(', ');
+          }
+          
+          console.log('Using select query:', selectQuery);
+        }
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(selectQuery)
+          .eq('is_public', true);
+
+        if (error) {
+          console.error('Supabase query error:', error);
+          showMessage(`Database query error: ${error.message}`, 'error');
+          
+          // Try without is_public filter
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('profiles')
+            .select(selectQuery)
+            .limit(10);
+          
+          if (fallbackError) {
+            showMessage(`Fallback query also failed: ${fallbackError.message}`, 'error');
+            return [];
+          }
+          
+          console.log('Fallback query succeeded:', fallbackData);
+          showMessage('Loaded profiles without is_public filter', 'success');
+          return fallbackData || [];
+        }
+
+        console.log('Fetched profiles:', data);
+        
+        if (!data || data.length === 0) {
+          console.log('No public profiles found. Trying without is_public filter...');
+          
+          // Try without is_public filter
+          const { data: allData, error: allError } = await supabase
+            .from('profiles')
+            .select(selectQuery)
+            .limit(10);
+          
+          if (allError) {
+            showMessage(`No profiles found and fallback failed: ${allError.message}`, 'error');
+            return [];
+          }
+          
+          if (allData && allData.length > 0) {
+            showMessage('Found profiles but none are marked as public. Showing all profiles for testing.', 'success');
+            return allData;
+          }
+          
+          showMessage('No profiles found in the database. Please add some test data.', 'error');
+          return [];
+        }
+
+        return data;
+      } catch (err) {
+        console.error('Fetch error:', err);
+        showMessage(`Error fetching profiles: ${err.message}`, 'error');
+        return [];
+      }
+    }
+
+    // Enhanced profile rendering
+    function renderProfilesPage(page, list = allProfiles) {
+      const container = document.getElementById('profileList');
+      
+      if (list.length === 0) {
+        container.innerHTML = '<div class="no-results">No profiles found. Try adjusting your search or check the debug panel.</div>';
+        document.querySelector('.pagination').innerHTML = '';
+        return;
+      }
+
+      currentPage = page;
+      const paginated = paginate(list, page);
+      container.innerHTML = '';
+
+      paginated.forEach(profile => {
+        const card = document.createElement('div');
+        card.className = 'profile-card';
+        
+        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered : 
+                             (profile.skills_offered ? [profile.skills_offered] : []);
+        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted : 
+                            (profile.skills_wanted ? [profile.skills_wanted] : []);
+
+        card.innerHTML = `
+          <div class="profile-photo-wrapper">
+            <img src="${profile.profile_photo || 'https://via.placeholder.com/100x100/0ea5e9/ffffff?text=' + (profile.name ? profile.name.charAt(0) : 'U')}" 
+                 alt="${profile.name || 'User'}" 
+                 class="profile-photo-img" 
+                 onerror="this.src='https://via.placeholder.com/100x100/0ea5e9/ffffff?text=U'" />
+          </div>
+          <div class="profile-info">
+            <h3>${profile.name || 'Anonymous User'}</h3>
+            <div><strong>Skills Offered:</strong></div>
+            <div class="skill-tags">
+              ${skillsOffered.map(skill => `<span>${skill}</span>`).join('')}
+            </div>
+            <div><strong>Skills Wanted:</strong></div>
+            <div class="skill-tags wanted">
+              ${skillsWanted.map(skill => `<span>${skill}</span>`).join('')}
+            </div>
+            <div><strong>Availability:</strong> ${profile.availability || 'Not specified'}</div>
+            <div class="rating">Rating: ${profile.rating || 'No rating'}/5</div>
+          </div>
+          <button class="request-btn" onclick="sendSkillRequest('${profile.id}', '${profile.name}', ${JSON.stringify(skillsOffered).replace(/"/g, '&quot;')})">
+            Request Skills
+          </button>
+        `;
+
+        container.appendChild(card);
+      });
+
+      renderPagination(list.length);
+      
+      if (debugMode) {
+        updateDebugInfo();
+      }
+    }
+
+    // Skill-based request function
+    async function sendSkillRequest(toUserId, toUserName, skillsOffered) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          showMessage('Please login to send skill requests', 'error');
+          return;
+        }
+
+        if (user.id === toUserId) {
+          showMessage('You cannot send a request to yourself', 'error');
+          return;
+        }
+
+        // Get current user's profile to check skills wanted
+        const { data: currentUserProfile } = await supabase
+          .from('profiles')
+          .select('skills_wanted, name')
+          .eq('id', user.id)
+          .single();
+
+        if (!currentUserProfile) {
+          showMessage('Please complete your profile first', 'error');
+          return;
+        }
+
+        const userSkillsWanted = Array.isArray(currentUserProfile.skills_wanted) ? 
+                                currentUserProfile.skills_wanted : 
+                                (currentUserProfile.skills_wanted ? [currentUserProfile.skills_wanted] : []);
+
+        // Find matching skills
+        const matchingSkills = skillsOffered.filter(skill => 
+          userSkillsWanted.some(wantedSkill => 
+            wantedSkill.toLowerCase().includes(skill.toLowerCase()) ||
+            skill.toLowerCase().includes(wantedSkill.toLowerCase())
+          )
+        );
+
+        if (matchingSkills.length === 0) {
+          const confirm = window.confirm(
+            `No direct skill matches found between what ${toUserName} offers and what you want. Send request anyway?`
+          );
+          if (!confirm) return;
+        }
+
+        // Create the request
+        const requestData = {
+          from_user_id: user.id,
+          to_user_id: toUserId,
+          skills_requested: matchingSkills.length > 0 ? matchingSkills : skillsOffered,
+          message: `Hi ${toUserName}! I'm interested in learning ${matchingSkills.length > 0 ? matchingSkills.join(', ') : skillsOffered.join(', ')} from you. ${matchingSkills.length > 0 ? 'I noticed this matches what I\'m looking for!' : 'I think we could have a great skill exchange!'} Let's connect!`,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+          .from('skill_requests')
+          .insert([requestData])
+          .select();
+
+        if (error) {
+          console.error('Request error:', error);
+          showMessage(`Error sending request: ${error.message}`, 'error');
+          return;
+        }
+
+        showMessage(
+          `Request sent to ${toUserName}! ${matchingSkills.length > 0 ? 
+            `Matching skills: ${matchingSkills.join(', ')}` : 
+            'General skill exchange request sent.'}`, 
+          'success'
+        );
+
+      } catch (err) {
+        console.error('Request error:', err);
+        showMessage(`Error sending request: ${err.message}`, 'error');
+      }
+    }
+
+    // Pagination functions
+    function paginate(list, page) {
+      const start = (page - 1) * profilesPerPage;
+      return list.slice(start, start + profilesPerPage);
+    }
+
+    function renderPagination(total) {
+      const totalPages = Math.ceil(total / profilesPerPage);
+      const container = document.querySelector('.pagination');
+      
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = `<button onclick="changePage(${Math.max(1, currentPage - 1)})" ${currentPage === 1 ? 'disabled' : ''}>&lt;</button>`;
+      
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+          html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active-page' : ''}">${i}</button>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+          html += `<span>...</span>`;
+        }
+      }
+      
+      html += `<button onclick="changePage(${Math.min(totalPages, currentPage + 1)})" ${currentPage === totalPages ? 'disabled' : ''}>&gt;</button>`;
+      container.innerHTML = html;
+    }
+
+    function changePage(page) {
+      renderProfilesPage(page, currentFilter.length > 0 ? currentFilter : allProfiles);
+    }
+
+    // Search functionality
+    function searchSkill() {
+      const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+      const availabilityFilter = document.getElementById('availability').value;
+      
+      const filtered = allProfiles.filter(profile => {
+        const skillsOffered = Array.isArray(profile.skills_offered) ? profile.skills_offered : 
+                             (profile.skills_offered ? [profile.skills_offered] : []);
+        const skillsWanted = Array.isArray(profile.skills_wanted) ? profile.skills_wanted : 
+                            (profile.skills_wanted ? [profile.skills_wanted] : []);
+        
+        const allSkills = [...skillsOffered, ...skillsWanted];
+        
+        const matchesSkills = !keyword || allSkills.some(skill => 
+          skill.toLowerCase().includes(keyword)
+        );
+        
+        const matchesAvailability = !availabilityFilter || profile.availability === availabilityFilter;
+        
+        return matchesSkills && matchesAvailability;
+      });
+      
+      currentFilter = filtered;
+      renderProfilesPage(1, filtered);
+      
+      if (keyword || availabilityFilter) {
+        showMessage(`Found ${filtered.length} profiles matching your search`, 'success');
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('availability').value = '';
+      currentFilter = [];
+      renderProfilesPage(1, allProfiles);
+    }
+
+    // Menu functions
+    function toggleMenu() {
+      document.getElementById('dropdownMenu').classList.toggle('hidden');
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = 'auth.html';
+    }
+
+    // Event listeners
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('dropdownMenu');
+      const avatar = document.getElementById('headerAvatar');
+      if (menu && !menu.contains(e.target) && !avatar.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    // Enter key search
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchSkill();
+      }
+    });
+
+    // Initialize the application
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+        const avatar = document.getElementById('headerAvatar');
+        const email = document.getElementById('menuEmail');
+        const loginLink = document.getElementById('menuLogin');
+        const signupLink = document.getElementById('menuSignup');
+        const logoutLink = document.getElementById('menuLogout');
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('profile_photo, name')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.profile_photo) {
+            avatar.src = profile.profile_photo;
+          }
+          
+          email.textContent = user.email;
+          loginLink.style.display = 'none';
+          signupLink.style.display = 'none';
+          logoutLink.style.display = 'block';
+        } else {
+          email.textContent = 'Not Logged In';
+          loginLink.style.display = 'block';
+          signupLink.style.display = 'block';
+          logoutLink.style.display = 'none';
+        }
+
+        // Load profiles
+        allProfiles = await fetchProfiles();
+        renderProfilesPage(1);
+        
+        if (allProfiles.length === 0) {
+          console.log('No profiles loaded. Check your database setup.');
+        }
+
+      } catch (err) {
+        console.error('Initialization error:', err);
+        showMessage('Error initializing application', 'error');
+      }
+    });
+
+    // Make functions globally available
+    window.toggleMenu = toggleMenu;
+    window.logout = logout;
+    window.sendSkillRequest = sendSkillRequest;
+    window.changePage = changePage;
+    window.searchSkill = searchSkill;
+    window.clearSearch = clearSearch;
+    window.toggleDebug = toggleDebug;
+    window.testTableStructure = testTableStructure;
+    window.checkUserVisibility = checkUserVisibility;
+    window.makeAllUsersVisible = makeAllUsersVisible;
+    window.createSampleUsers = createSampleUsers;
+    window.refreshProfiles = refreshProfiles;
+  </script>
+</body>
+</html>
